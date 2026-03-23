@@ -1,73 +1,89 @@
-# React + TypeScript + Vite
+# Cook Systems Consulting Chat Widget
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An embeddable chat widget for [cooksystemsconsulting.com](https://cooksystemsconsulting.com) that connects to a Harbor Works agent.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Clean, modern chat interface with Cook Systems branding
+- Mobile-responsive (adapts to small screens)
+- Minimized state (floating bubble in bottom-right corner)
+- Expanded state (chat window with smooth slide-in animation)
+- Typing indicators with animated dots
+- Quick reply buttons for common questions
+- Conversation history persisted in localStorage
+- Configurable agent endpoint (mock responses for demo)
+- "Powered by Harbor Works" subtle branding
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19 + TypeScript
+- Tailwind CSS v4
+- Vite 8
+- Deployed on Vercel
 
-## Expanding the ESLint configuration
+## Development
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+NODE_ENV=development npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Build
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+NODE_ENV=development npm run build
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Embed on Any Website
+
+### Option A: iframe embed
+
+```html
+<iframe
+  src="https://consulting-chat.vercel.app"
+  style="position:fixed;bottom:0;right:0;width:420px;height:600px;max-height:90vh;border:none;z-index:99999;background:transparent;"
+  allow="clipboard-write"
+></iframe>
+```
+
+### Option B: Script tag embed
+
+```html
+<script src="https://consulting-chat.vercel.app/embed.js"></script>
+<script>
+  CookSystemsChat.init({
+    agentId: "consulting-assistant",
+    position: "bottom-right",
+    greeting: "Hi! How can I help you today?"
+  });
+</script>
+```
+
+### Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `agentId` | string | — | Agent identifier for API routing |
+| `position` | `"bottom-right"` \| `"bottom-left"` | `"bottom-right"` | Widget position on page |
+| `greeting` | string | `"Hi! How can I help you today?"` | Initial greeting message |
+| `primaryColor` | string | `#1B3A5C` | Brand color (reserved for future use) |
+| `agentEndpoint` | string | — | API endpoint for live responses (uses mock if omitted) |
+
+## Project Structure
+
+```
+src/
+├── App.tsx                    # Root widget component (open/close state)
+├── main.tsx                   # Entry point for standalone app
+├── embed.ts                   # Embed script for external sites
+├── types.ts                   # TypeScript interfaces
+├── index.css                  # Tailwind + animations
+├── hooks/
+│   └── useChat.ts             # Chat state, message history, API integration
+└── components/
+    ├── ChatWindow.tsx          # Main chat window (header, messages, input)
+    ├── ChatBubble.tsx          # Minimized floating bubble button
+    ├── MessageBubble.tsx       # Individual message rendering
+    ├── TypingIndicator.tsx     # Animated typing dots
+    └── QuickReplies.tsx        # Quick reply pill buttons
 ```
