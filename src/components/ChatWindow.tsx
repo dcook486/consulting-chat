@@ -42,7 +42,7 @@ export function ChatWindow({ config, onClose }: Props) {
   const showQuickReplies = messages.length === 0
 
   return (
-    <div className="animate-slide-up flex flex-col w-[380px] h-[520px] max-h-[80vh] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
+    <div className="animate-slide-up flex flex-col w-[calc(100vw-2rem)] sm:w-[380px] h-[calc(100vh-6rem)] sm:h-[520px] max-h-[80vh] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
       {/* Header */}
       <div className="bg-[#1B3A5C] text-white px-5 py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
