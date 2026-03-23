@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from 'react'
 import type { Message, ChatConfig } from '../types'
 
 const STORAGE_KEY = 'cooksystems-chat-history'
+const SESSION_KEY = 'cooksystems-session-id'
 
 function loadHistory(): Message[] {
   try {
@@ -18,13 +19,21 @@ function saveHistory(messages: Message[]) {
   } catch { /* quota exceeded */ }
 }
 
+function getSessionId(): string | null {
+  return localStorage.getItem(SESSION_KEY)
+}
+
+function setSessionId(id: string) {
+  localStorage.setItem(SESSION_KEY, id)
+}
+
 const MOCK_RESPONSES = [
-  "Thanks for reaching out! Cook Systems Consulting specializes in IT staffing, custom software development, and technology training. How can I help you today?",
-  "We offer a range of services including staff augmentation, managed services, and custom application development. Would you like to learn more about any of these?",
-  "Our team has extensive experience with Java, .NET, React, cloud infrastructure, and more. What technology stack are you working with?",
-  "I'd be happy to connect you with one of our consultants. Could you share a bit about your project requirements?",
-  "Cook Systems has been delivering technology solutions since 1988. We pride ourselves on building long-term partnerships with our clients.",
-  "We provide both onshore and nearshore development teams. What's the timeline for your project?",
+  "Thanks for reaching out! Cook Systems Consulting specializes in helping small businesses with AI-powered websites and automation. How can I help you today?",
+  "We offer a range of services including AI chatbot integration, scheduling automation, and lead management. Would you like to learn more about any of these?",
+  "Our team has extensive experience building solutions for clinics, dental offices, and other service-based businesses. What type of business are you running?",
+  "I'd be happy to connect you with our team. Could you share a bit about your current challenges?",
+  "Cook Systems helps businesses save time by automating repetitive tasks. We can set up a quick discovery call to discuss your needs.",
+  "We provide ongoing support including monthly maintenance, feature updates, and training. What's the timeline for your project?",
 ]
 
 export function useChat(config: ChatConfig) {
@@ -48,18 +57,27 @@ export function useChat(config: ChatConfig) {
 
     setIsTyping(true)
 
-    // Mock response with simulated delay
-    const delay = 800 + Math.random() * 1200
-    await new Promise(r => setTimeout(r, delay))
+    const endpoint = config.agentEndpoint || import.meta.env.VITE_API_URL
 
-    if (config.agentEndpoint) {
+    if (endpoint) {
       try {
-        const resp = await fetch(config.agentEndpoint, {
+        const resp = await fetch(`${endpoint}/api/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: content, agentId: config.agentId }),
+          body: JSON.stringify({
+            message: content,
+            sessionId: getSessionId(),
+            referrer: document.referrer || undefined,
+            userAgent: navigator.userAgent,
+          }),
         })
         const data = await resp.json()
+
+        // Store session ID for continuity
+        if (data.sessionId) {
+          setSessionId(data.sessionId)
+        }
+
         const assistantMsg: Message = {
           id: crypto.randomUUID(),
           role: 'assistant',
@@ -78,7 +96,10 @@ export function useChat(config: ChatConfig) {
       }
     }
 
-    // Mock response
+    // Mock response with simulated delay
+    const delay = 800 + Math.random() * 1200
+    await new Promise(r => setTimeout(r, delay))
+
     const mockReply = MOCK_RESPONSES[responseIndex.current % MOCK_RESPONSES.length]
     responseIndex.current++
 
@@ -95,11 +116,12 @@ export function useChat(config: ChatConfig) {
       return next
     })
     setIsTyping(false)
-  }, [config.agentEndpoint, config.agentId])
+  }, [config.agentEndpoint])
 
   const clearHistory = useCallback(() => {
     setMessages([])
     localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(SESSION_KEY)
   }, [])
 
   return { messages, isTyping, sendMessage, clearHistory }
